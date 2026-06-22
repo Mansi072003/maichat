@@ -1,0 +1,23 @@
+# Python-related files
+__pycache__/
+
+# macOS-specific files
+.DS_Store
+
+# Environment variables
+scripts/.env
+
+
+# Virtual environments
+venv/
+rag-backend/venv/
+pinecone-backend/venv/
+rag-backend/.env
+pinecone-backend/.env
+
+#node-files
+/frontend/node_modules
+frontend/node_modules/
+
+.env
+credentials

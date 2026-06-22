@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏥 Modular RAG Medical Assistant</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #ecf0f1;
+            --dark-text: #2c3e50;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .header-card h1 {
+            color: var(--primary-color);
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: var(--secondary-color);
+        }
+
+        .chat-interface {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .chat-messages {
+            height: 400px;
+            overflow-y: auto;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 80%;
+        }
+
+        .user-message {
+            background-color: var(--secondary-color);
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .assistant-message {
+            background-color: white;
+            border: 1px solid #dee2e6;
+            margin-right: auto;
+        }
+
+        .message-time {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .form-control {
+            border-radius: 25px !important;
+            border: 2px solid #e9ecef;
+            padding: 12px 20px;
+        }
+
+        .form-control:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--secondary-color), #5dade2);
+            border: none;
+            border-radius: 25px !important;
+            padding: 12px 25px;
+            font-weight: 600;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(45deg, #2980b9, var(--secondary-color));
+            transform: translateY(-2px);
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-online {
+            background-color: var(--success-color);
+            animation: pulse 2s infinite;
+        }
+
+        .status-offline {
+            background-color: var(--danger-color);
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .api-info {
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .code-block {
+            background: var(--primary-color);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 10px;
+            }
+            
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .message {
+                max-width: 95%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Header -->
+        <div class="header-card">
+            <h1><i class="fas fa-stethoscope"></i> Modular RAG Medical Assistant</h1>
+            <p class="lead">Enhanced AI-powered medical assistant with context management and chat history</p>
+            <div class="mt-3">
+                <span id="status-indicator" class="status-indicator status-offline"></span>
+                <span id="status-text">Checking system status...</span>
+            </div>
+        </div>
+
+        <!-- Features Grid -->
+        <div class="feature-grid">
+            <div class="feature-card text-center">
+                <div class="feature-icon">
+                    <i class="fas fa-puzzle-piece"></i>
+                </div>
+                <h4>Modular Architecture</h4>
+                <p>Separate services for embedding, retrieval, generation, and context management with improved maintainability.</p>
+            </div>
+
+            <div class="feature-card text-center">
+                <div class="feature-icon">
+                    <i class="fas fa-memory"></i>
+                </div>
+                <h4>Context Management</h4>
+                <p>Smart chat history with short-term and long-term memory, automatic summarization after 10 messages.</p>
+            </div>
+
+            <div class="feature-card text-center">
+                <div class="feature-icon">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+                <h4>Patient Isolation</h4>
+                <p>Complete context and data isolation per patient using namespaced storage for privacy and security.</p>
+            </div>
+
+            <div class="feature-card text-center">
+                <div class="feature-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <h4>Advanced Retrieval</h4>
+                <p>Clinical BERT embeddings with Pinecone vector search for relevant medical record retrieval.</p>
+            </div>
+        </div>
+
+        <!-- API Documentation -->
+        <div class="feature-card">
+            <h3><i class="fas fa-code"></i> API Documentation</h3>
+            <div class="api-info">
+                <h5>Main Chat Endpoint</h5>
+                <p><strong>POST</strong> <code>/chat</code> - Process queries with context management</p>
+                <div class="code-block">
+{
+  "query": "What medications is the patient taking?",
+  "patient_id": "patient-123",
+  "session_id": "session-456"
+}
+                </div>
+            </div>
+            
+            <div class="api-info">
+                <h5>Additional Endpoints</h5>
+                <ul>
+                    <li><strong>GET</strong> <code>/health</code> - System health check</li>
+                    <li><strong>GET</strong> <code>/chat-history/{patient_id}</code> - Retrieve chat history</li>
+                    <li><strong>DELETE</strong> <code>/chat-history/{patient_id}</code> - Clear chat history</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Interactive Chat Interface -->
+        <div class="chat-interface">
+            <h3><i class="fas fa-comments"></i> Test Chat Interface</h3>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="patientId" class="form-label">Patient ID</label>
+                    <input type="text" class="form-control" id="patientId" placeholder="e.g., patient-123" value="patient-demo">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="sessionId" class="form-label">Session ID (Optional)</label>
+                    <input type="text" class="form-control" id="sessionId" placeholder="e.g., session-456" value="demo-session">
+                </div>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <div class="text-center text-muted">
+                    <i class="fas fa-comment-medical"></i>
+                    <p>Start a conversation with the medical AI assistant...</p>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <input type="text" class="form-control" id="messageInput" placeholder="Ask about patient's medical records..." maxlength="1000">
+                <button class="btn btn-primary" type="button" id="sendButton">
+                    <i class="fas fa-paper-plane"></i> Send
+                </button>
+            </div>
+            
+            <div class="mt-3">
+                <small class="text-muted">
+                    <i class="fas fa-info-circle"></i>
+                    This is a demo interface. Ensure you have proper patient data and API keys configured.
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        class MedicalChatInterface {
+            constructor() {
+                this.initializeElements();
+                this.bindEvents();
+                this.checkSystemHealth();
+            }
+
+            initializeElements() {
+                this.chatMessages = document.getElementById('chatMessages');
+                this.messageInput = document.getElementById('messageInput');
+                this.sendButton = document.getElementById('sendButton');
+                this.patientIdInput = document.getElementById('patientId');
+                this.sessionIdInput = document.getElementById('sessionId');
+                this.statusIndicator = document.getElementById('status-indicator');
+                this.statusText = document.getElementById('status-text');
+            }
+
+            bindEvents() {
+                this.sendButton.addEventListener('click', () => this.sendMessage());
+                this.messageInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.sendMessage();
+                    }
+                });
+            }
+
+            async checkSystemHealth() {
+                try {
+                    const response = await fetch('/health');
+                    const health = await response.json();
+                    
+                    if (health.status === 'healthy') {
+                        this.statusIndicator.className = 'status-indicator status-online';
+                        this.statusText.textContent = 'System Online - All services healthy';
+                    } else {
+                        this.statusIndicator.className = 'status-indicator status-offline';
+                        this.statusText.textContent = 'System Issues Detected';
+                    }
+                } catch (error) {
+                    this.statusIndicator.className = 'status-indicator status-offline';
+                    this.statusText.textContent = 'System Offline';
+                }
+            }
+
+            addMessage(content, isUser = false, timestamp = new Date()) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${isUser ? 'user-message' : 'assistant-message'}`;
+                
+                const timeStr = timestamp.toLocaleTimeString();
+                messageDiv.innerHTML = `
+                    <div>${content}</div>
+                    <div class="message-time">${timeStr}</div>
+                `;
+                
+                // Clear placeholder if it exists
+                if (this.chatMessages.querySelector('.text-center.text-muted')) {
+                    this.chatMessages.innerHTML = '';
+                }
+                
+                this.chatMessages.appendChild(messageDiv);
+                this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+            }
+
+            setLoading(isLoading) {
+                if (isLoading) {
+                    this.sendButton.disabled = true;
+                    this.sendButton.innerHTML = '<div class="loading"></div>';
+                    this.messageInput.disabled = true;
+                } else {
+                    this.sendButton.disabled = false;
+                    this.sendButton.innerHTML = '<i class="fas fa-paper-plane"></i> Send';
+                    this.messageInput.disabled = false;
+                    this.messageInput.focus();
+                }
+            }
+
+            async sendMessage() {
+                const message = this.messageInput.value.trim();
+                const patientId = this.patientIdInput.value.trim();
+                
+                if (!message || !patientId) {
+                    alert('Please enter both a message and patient ID');
+                    return;
+                }
+
+                // Add user message
+                this.addMessage(message, true);
+                this.messageInput.value = '';
+                this.setLoading(true);
+
+                try {
+                    const response = await fetch('/chat', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            query: message,
+                            patient_id: patientId,
+                            session_id: this.sessionIdInput.value.trim() || 'default'
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        this.addMessage(data.answer, false);
+                        
+                        // Show context info if available
+                        if (data.context_used && data.context_used.length > 0) {
+                            const contextInfo = `<small class="text-muted">
+                                <i class="fas fa-info-circle"></i> 
+                                Used ${data.context_used.length} medical record(s) as context
+                            </small>`;
+                            this.addMessage(contextInfo, false);
+                        }
+                    } else {
+                        throw new Error(data.detail || 'Server error');
+                    }
+                } catch (error) {
+                    this.addMessage(`❌ Error: ${error.message}`, false);
+                    console.error('Chat error:', error);
+                } finally {
+                    this.setLoading(false);
+                }
+            }
+        }
+
+        // Initialize the chat interface when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new MedicalChatInterface();
+        });
+    </script>
+</body>
+</html>

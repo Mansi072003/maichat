@@ -1,0 +1,29 @@
+services:
+  # The FastAPI application service, named rag-backend
+  rag-backend:
+    build:
+      context: ./rag-backend
+    container_name: rag-backend
+    command: gunicorn main:app --workers 1 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000 --keep-alive 300
+    volumes:
+      - ./rag-backend:/app
+      - /var/app/config/arogarocks-cloudhealthcareapi.json:/var/app/config/arogarocks-cloudhealthcareapi.json:ro
+    ports:
+      - "8000:8000"
+    env_file:
+      - /var/app/config/.env
+
+  pinecone-backend:
+    build:
+      context: ./pinecone-backend
+    container_name: pinecone-backend
+    command: python main.py
+    volumes:
+      - ./pinecone-backend:/app
+      - /var/app/config/arogarocks-cloudhealthcareapi.json:/var/app/config/arogarocks-cloudhealthcareapi.json:ro
+    env_file:
+      - /var/app/config/.env
+
+volumes:
+  mongodb_data:
+
